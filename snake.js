@@ -1,33 +1,71 @@
-const canvas = document.querySelector("canvas");
-const ctx = canvas.getContext("2d");
 var id_Interval;
 var gameOver = false;
 var snake;
 var pomme;
 var dessin;
+var canvas;
 
-// Function pour desinner un block selon une position et un type objet.
-function drawBlock(pos, obj) {
-    var x = pos[0];
-    var y = pos[1];
+// Classe Terrain.
 
-    if (obj === "Snake") {
-        ctx.fillStyle = "red";
-        ctx.fillRect(x, y, 25, 25);
-    } else if (obj === "Pomme") {
-        ctx.fillStyle = "green";
-        ctx.beginPath();
-        ctx.arc(x + 12.5, y + 12.5, 12.5, 0, 2 * Math.PI);
-        ctx.fill();
+export class Terrain {
+    canvas;
+    ctx;
+    constructor(){
+        const body= document.querySelector("body");
+        const canvas=document.createElement("canvas");
+
+        canvas.width=625;
+        canvas.height=625;
+        body.appendChild(canvas);
+        this.canvas=canvas;
+        this.ctx=canvas.getContext("2d");
+        console.log(canvas.getContext("2d"));
+
+        
+    }
+
+    getCtx(){
+        return this.ctx;
+    }
+    getCanvas(){
+        return this.canvas;
+    }
+
+    clear(){
+        this.ctx.clearRect(0,0,this.canvas.width, this.canvas.height)
+    }
+
+}
+const terrain=new Terrain();
+
+// Classe abstraite Dessin
+class Dessin{
+    
+    constructor(){
+        if(new.target === Dessin){
+            throw new TypeError("Dessin ne peut pas être directement instancié.")
+            
+        }
+        
+    }
+
+    dessin(){
+        //Dessiner le dessin.
     }
 }
 
 // Classe permettant d'instancier le serpent.
-class Snake {
+export class Snake extends Dessin {
+    body;
+    direction;
+    nextDirection;
+
     constructor() {
+        super();
         this.body = [[300, 0]];  // Tableau comportant la position des blocks constituant le serpent.
         this.direction = "Down"; // Direction courante du serpent.
-        this.nextDirection = ""; 
+        this.nextDirection = "";
+        
     }
 
     setDirection(direction) {
@@ -47,14 +85,22 @@ class Snake {
     }
 
     // Function qui permet de dessiner le serpent.
-    dessin() {
+    dessin(canvas) {
+        const ctx=canvas.getContext("2d");
+        if (!ctx) {
+            throw new TypeError("Contexte du canvas non défini");
+        }
         // Supprime le contenue du canva avant de dessiner le serpent.
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.save();
         for (var i = 0; i < this.body.length; i++) {
-            drawBlock(this.body[i], "Snake");
+            var x = this.body[i][0];
+            var y = this.body[i][1];
+            ctx.fillStyle = "red";
+            ctx.fillRect(x, y, 25, 25);
         }
         ctx.restore();
+        return true;
     }
 
     // Function faisant bouger le serpent.
@@ -125,22 +171,29 @@ class Snake {
 }
 
 
-class Pomme {
-    constructor() {
-        this.position = [Math.floor(Math.random() * (canvas.width / 25)) * 25, Math.floor(Math.random() * (canvas.height / 25)) * 25];
+export class Pomme extends Dessin {
+    constructor(canvas) {
+        super();
+        this.position = [Math.floor(Math.random() * (canvas.width / 25)) * 25, Math.floor(Math.random() * (canvas.height/ 25)) * 25];
+        
     }
 
     getPosition() {
         return this.position;
     }
 
-    deplacer() {
-        this.position = [Math.floor(Math.random() * (canvas.width / 25)) * 25, Math.floor(Math.random() * (canvas.height / 25)) * 25];
+    deplacer(canvas) {
+        this.position = [Math.floor(Math.random() * (canvas.width/ 25)) * 25, Math.floor(Math.random() * (canvas.height/ 25)) * 25];
     }
 
-    dessin() {
+    dessin(ctx) {
+        var x = this.position[0];
+        var y = this.position[1];
         ctx.save();
-        drawBlock(this.position, "Pomme");
+        ctx.fillStyle = "green";
+        ctx.beginPath();
+        ctx.arc(x + 12.5, y + 12.5, 12.5, 0, 2 * Math.PI);
+        ctx.fill();
         ctx.restore();
     }
 }
@@ -148,9 +201,9 @@ class Pomme {
 
 
 function dessinerCanvas() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    snake.dessin();
-    pomme.dessin();
+    terrain.clear();
+    snake.dessin(terrain.getCanvas());
+    pomme.dessin(terrain.getCtx());
 }
 
 document.addEventListener("keydown", function (event) {
@@ -181,15 +234,15 @@ document.addEventListener("keydown", function (event) {
 
 
 // Function permettant de initialiser la partie. 
-function init(){
+ function init(){
     gameOver=false;
     snake = new Snake();
-    pomme = new Pomme();
-    ctx.clear
+    pomme = new Pomme(terrain.getCanvas());
+    canvas=terrain.getCanvas();
     dessin=setInterval(dessinerCanvas, 50);
     setInterval(() => {
         if (snake.Manger(pomme)) {
-            pomme.deplacer();
+            pomme.deplacer(canvas);
         }
     }, 10);
 
@@ -197,8 +250,8 @@ function init(){
 }
 
 function collision(){
-    snakeBody=snake.getBody();
-    head=snake.getHead();
+    var snakeBody=snake.getBody();
+    const head=snake.getHead();
 
     // Met fin à la partie en cas de collision entre le serpent est le terrain de jeu.
     if ((snake.getHead()[0]+25)> canvas.width || (snake.getHead()[0]) < 0 || (snake.getHead()[1]+25)> canvas.height || (snake.getHead()[1]) < 0 ) {
