@@ -13,7 +13,6 @@ export class Terrain {
     constructor(){
         const body= document.querySelector("body");
         const canvas=document.createElement("canvas");
-
         canvas.width=625;
         canvas.height=625;
         body.appendChild(canvas);
