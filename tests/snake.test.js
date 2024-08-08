@@ -2,6 +2,32 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { Snake,Terrain,Pomme } from '../snake.js';
 
 
+describe("Terrain",()=>{
+    const terrain=new Terrain();
+
+    it("Verification de la définition des fonctions",()=>{
+        expect(terrain.getCanvas).toBeDefined;
+        expect(terrain.getCtx).toBeDefined;
+        expect(terrain.getWidth).toBeDefined;
+        expect(terrain.getHeight).toBeDefined;
+
+    })
+
+    it("Initialisation du Terrain",()=>{
+        const canvas=document.createElement("Canvas");
+        const ctx=canvas.getContext("2d");
+
+        expect(terrain.getWidth()).toEqual(625);
+        expect(terrain.getHeight()).toEqual(625);
+        expect(terrain.getCanvas()).toBeInstanceOf(canvas.constructor);
+        expect(terrain.getCtx()).toBeInstanceOf(ctx.constructor);
+        
+
+    })
+
+
+})
+
 
 describe("Serpent",()=>{
     var terrain;
@@ -149,6 +175,25 @@ describe("Pomme",()=>{
         expect(init_pos).not.toEqual(new_pos);
         console.log(init_pos);
         console.log(new_pos,"new pos");
+        
+    })
+
+    it("Déssiner la Pomme",()=>{
+        expect(pomme.dessin).toBeDefined();
+        const canvas=document.createElement("Canvas");
+        canvas.width=625;
+        canvas.height=625;
+        const canvas_ctx=canvas.getContext("2d");
+        const terrain_ctx=terrain.getCtx();
+        pomme.dessin(terrain_ctx);
+        const imageData1=canvas_ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+        const imageData2=terrain_ctx.getImageData(0, 0, terrain.getCanvas().width, terrain.getCanvas().height).data;
+
+        if(imageData1.length !== imageData2.length){
+            throw new Error("Les tableaux n'ont pas la même taille.")
+        }
+
+        expect(imageData2).not.toEqual(imageData1);
         
     })
 })

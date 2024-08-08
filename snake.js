@@ -5,7 +5,6 @@ var pomme;
 var dessin;
 var canvas;
 
-// Classe Terrain.
 
 export class Terrain {
     canvas;
@@ -18,7 +17,8 @@ export class Terrain {
         body.appendChild(canvas);
         this.canvas=canvas;
         this.ctx=canvas.getContext("2d");
-        console.log(canvas.getContext("2d"));
+        this.width=canvas.width;
+        this.height=canvas.height;
 
         
     }
@@ -29,8 +29,16 @@ export class Terrain {
     getCanvas(){
         return this.canvas;
     }
+    getWidth(){
+        return this.width;
+    }
+    getHeight(){
+        return this.height;
+    }
+
 
     clear(){
+        // Efface les dessins du canvas.
         this.ctx.clearRect(0,0,this.canvas.width, this.canvas.height)
     }
 
@@ -53,7 +61,7 @@ class Dessin{
     }
 }
 
-// Classe permettant d'instancier le serpent.
+
 export class Snake extends Dessin {
     body;
     direction;
@@ -89,16 +97,13 @@ export class Snake extends Dessin {
         if (!ctx) {
             throw new TypeError("Contexte du canvas non défini");
         }
-        // Supprime le contenue du canva avant de dessiner le serpent.
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.save();
+        
         for (var i = 0; i < this.body.length; i++) {
             var x = this.body[i][0];
             var y = this.body[i][1];
             ctx.fillStyle = "red";
             ctx.fillRect(x, y, 25, 25);
         }
-        ctx.restore();
         return true;
     }
 
@@ -188,12 +193,12 @@ export class Pomme extends Dessin {
     dessin(ctx) {
         var x = this.position[0];
         var y = this.position[1];
-        ctx.save();
+
         ctx.fillStyle = "green";
         ctx.beginPath();
         ctx.arc(x + 12.5, y + 12.5, 12.5, 0, 2 * Math.PI);
         ctx.fill();
-        ctx.restore();
+        
     }
 }
 
@@ -201,8 +206,8 @@ export class Pomme extends Dessin {
 
 function dessinerCanvas() {
     terrain.clear();
-    snake.dessin(terrain.getCanvas());
     pomme.dessin(terrain.getCtx());
+    snake.dessin(terrain.getCanvas());
 }
 
 document.addEventListener("keydown", function (event) {
@@ -232,7 +237,7 @@ document.addEventListener("keydown", function (event) {
 
 
 
-// Function permettant de initialiser la partie. 
+// Function permettant d'initialiser la partie. 
  function init(){
     gameOver=false;
     snake = new Snake();
@@ -253,7 +258,7 @@ function collision(){
     const head=snake.getHead();
 
     // Met fin à la partie en cas de collision entre le serpent est le terrain de jeu.
-    if ((snake.getHead()[0]+25)> canvas.width || (snake.getHead()[0]) < 0 || (snake.getHead()[1]+25)> canvas.height || (snake.getHead()[1]) < 0 ) {
+    if ((snake.getHead()[0]+25)> canvas.width || (snake.getHead()[0]+25) < 0 || (snake.getHead()[1]+25)> canvas.height || (snake.getHead()[1]+25) < 0 ) {
         // Arrêt du déplacement du serpent.
         clearInterval(id_Interval);
         // Arrêt de la mis à jour de la position du serpent.
@@ -276,4 +281,5 @@ function collision(){
 setInterval(()=>{if(gameOver){
     init();
 }});
+
 init();
